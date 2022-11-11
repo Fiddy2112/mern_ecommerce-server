@@ -1,5 +1,7 @@
+require("dotenv").config();
 const User = require("../models/user");
 const argon2 = require("argon2");
+var jwt = require("jsonwebtoken");
 
 class AuthController {
   /**
@@ -39,11 +41,17 @@ class AuthController {
       });
 
       await newUser.save();
+
+      const accessToken = await jwt.sign(
+        { id: newUser._id },
+        process.env.ACCESS_TOKEN
+      );
+
       // Successfully
       res.status(200).json({
         success: true,
         message: "The user has been created successfully!!",
-        newUser,
+        accessToken,
       });
     } catch (err) {
       console.log(err);
@@ -80,20 +88,26 @@ class AuthController {
       }
       //To verify a password
       const passwordValid = await argon2.verify(user.password, password);
+
       if (!passwordValid) {
         return res.status(400).json({
           success: false,
           message: "Incorrect username or password",
         });
       }
+      // All good --> access token
+      const accessToken = await jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.ACCESS_TOKEN,
+        { expiresIn: "3d" }
+      );
 
-      const { password, ...others } = user._doc;
+      // const { password, ...others } = user._doc;
 
       res.status(200).json({
         success: true,
         message: "User logged in successfully",
-        passwords,
-        others,
+        accessToken,
       });
     } catch (err) {
       console.log(err);

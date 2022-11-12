@@ -13,9 +13,13 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN);
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+      if (err) res.status(400).json("Token is not valid!");
 
-    req.id = decoded.id;
+      req.user = user;
+    });
+
+    // req.id = decoded.id;
     next();
   } catch (e) {
     console.log(e);
@@ -26,12 +30,12 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-const verifyTokenAndAuthors = (req, res) => {
+const verifyTokenAdmin = (req, res, next) => {
   verifyToken(
     (req,
     res,
     () => {
-      if (req.user.id === req.params.id || req.user.isAdmin) {
+      if (req.user.isAdmin) {
         next();
       } else {
         res.status(400).json({
@@ -43,4 +47,4 @@ const verifyTokenAndAuthors = (req, res) => {
   );
 };
 
-module.exports = { verifyToken, verifyTokenAndAuthors };
+module.exports = { verifyToken, verifyTokenAdmin };

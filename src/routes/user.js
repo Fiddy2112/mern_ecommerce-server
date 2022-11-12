@@ -1,8 +1,8 @@
 const express = require("express");
 const UserController = require("../controllers/UserController");
-const { verifyTokenAndAuthors } = require("../middleware/auth");
+const { verifyTokenAdmin, verifyToken } = require("../middleware/auth");
 const router = express.Router();
 
-router.put("/:id", verifyTokenAndAuthors, UserController.updateUser);
+router.put("/:id", verifyTokenAdmin, UserController.updateUser);
 
 module.exports = router;

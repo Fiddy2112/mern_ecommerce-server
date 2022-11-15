@@ -5,8 +5,7 @@ class UserController {
     const userId = req.params.id;
     const { password } = req.body;
     if (password) {
-      password = argon2.hash(password);
-      console.log(password);
+      password = await argon2.verify(user.password, password);
     }
     try {
       const updatedUser = await User.findByIdAndUpdate(

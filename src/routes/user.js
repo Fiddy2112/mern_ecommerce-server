@@ -8,5 +8,6 @@ const {
 const router = express.Router();
 
 router.put("/:id", verifyTokenAuthors, UserController.updateUser);
+router.get("/:id", verifyTokenAdmin, UserController.getStats);
 
 module.exports = router;

@@ -2,10 +2,10 @@ const User = require("../models/user");
 
 class UserController {
   async updateUser(req, res) {
-    const userId = req.params.id;
+    const userId = { _id: req.params.id };
     const { password } = req.body;
     if (password) {
-      password = await argon2.verify(user.password, password);
+      password = await argon2.verify(req.user.password, password);
     }
     try {
       const updatedUser = await User.findByIdAndUpdate(
@@ -30,32 +30,30 @@ class UserController {
     }
   }
 
-  /**
-   * @route GET api/auth/
-   * @desc Check if user is logged in
-   * @access Public
-   */
-
-  async userLogged(req, res) {
+  async getStats(req, res) {
+    const date = new Date();
+    const latsYear = new Date(date.setFullYear(date.getFullYear() - 1));
     try {
-      // select('-password') : exclude password
-      const user = await User.findById(req.userId).select("-password");
-      if (!user) {
-        return res.status(400).json({
-          success: false,
-          massage: "User not found",
-        });
-      }
-      res.status(200).json({
-        success: true,
-        user,
-      });
+      const data = await User.aggregate([
+        {
+          $match: {
+            createAt: { $gte: latsYear },
+          },
+        },
+        { $project: { month: { $month: "$createAt" } } },
+        {
+          $group: {
+            _id: "$month",
+            total: { $sum: 1 },
+          },
+        },
+      ]);
+      res.status(200).json(data);
     } catch (err) {
-      console.error(error);
+      console.log(err);
       res.status(500).json({
         success: false,
         message: "Internal server error",
-        error,
       });
     }
   }

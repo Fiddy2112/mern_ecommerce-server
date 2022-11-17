@@ -117,6 +117,36 @@ class AuthController {
       });
     }
   }
+
+  /**
+   * @route GET api/auth/
+   * @desc Check if user is logged in
+   * @access Public
+   */
+
+  async userLogged(req, res) {
+    try {
+      // select('-password') : exclude password
+      const user = await User.findById(req.id).select("-password");
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          massage: "User not found",
+        });
+      }
+      res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (err) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error,
+      });
+    }
+  }
 }
 
 module.exports = new AuthController();
